@@ -16,14 +16,17 @@ public struct BuildOptions {
 	public var cacheBuilds: Bool
 	/// Whether to use downloaded binaries if possible.
 	public var useBinaries: Bool
-
+    /// Skip archive when build Device SDK
+    public var skipArchive: Bool
+    
 	public init(
 		configuration: String,
 		platforms: Set<SDK>? = nil,
 		toolchain: String? = nil,
 		derivedDataPath: String? = nil,
 		cacheBuilds: Bool = true,
-		useBinaries: Bool = true
+		useBinaries: Bool = true,
+        skipArchive: Bool = false
 	) {
 		self.configuration = configuration
 		self.platforms = platforms
@@ -31,5 +34,6 @@ public struct BuildOptions {
 		self.derivedDataPath = derivedDataPath
 		self.cacheBuilds = cacheBuilds
 		self.useBinaries = useBinaries
+        self.skipArchive = skipArchive
 	}
 }

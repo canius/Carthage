@@ -598,7 +598,8 @@ public func buildScheme( // swiftlint:disable:this function_body_length cyclomat
 		scheme: scheme,
 		configuration: options.configuration,
 		derivedDataPath: options.derivedDataPath,
-		toolchain: options.toolchain
+		toolchain: options.toolchain,
+        skipArchive: options.skipArchive
 	)
 
 	return BuildSettings.SDKsForScheme(scheme, inProject: project)
@@ -783,7 +784,7 @@ private func build(sdk: SDK, with buildArgs: BuildArguments, in workingDirectory
 			//
 			// See https://github.com/Carthage/Carthage/issues/2056
 			// and https://developer.apple.com/library/content/qa/qa1964/_index.html.
-			let xcodebuildAction: BuildArguments.Action = sdk.isDevice ? .archive : .build
+			let xcodebuildAction: BuildArguments.Action = (sdk.isDevice && argsForBuilding.skipArchive != true) ? .archive : .build
 			return BuildSettings.load(with: argsForLoading, for: xcodebuildAction)
 				.filter { settings in
 					// Only copy build products that are frameworks
