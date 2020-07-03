@@ -1327,11 +1327,24 @@ public func BCSymbolMapsForFramework(_ frameworkURL: URL) -> SignalProducer<URL,
 
 /// Sends a set of UUIDs for each architecture present in the given URL.
 private func UUIDsFromDwarfdump(_ url: URL) -> SignalProducer<Set<UUID>, CarthageError> {
-	let dwarfdumpTask = Task("/usr/bin/xcrun", arguments: [ "dwarfdump", "--uuid", url.path ])
-
-	return dwarfdumpTask.launch()
-		.ignoreTaskData()
-		.mapError(CarthageError.taskError)
+    return
+        SignalProducer<Data, CarthageError> { observer, disposable in
+            let pipe = Pipe()
+            let process = Process.init()
+            process.launchPath = "/usr/bin/xcrun"
+            process.arguments = [ "dwarfdump", "--uuid", url.path ]
+            process.standardOutput = pipe
+            process.launch()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            if process.terminationStatus == 0 {
+                observer.send(value: data)
+            } else {
+                // NOTE: recover when read uuid failed.
+                observer.send(value: Data())
+            }
+            observer.sendCompleted()
+        }
 		.map { String(data: $0, encoding: .utf8) ?? "" }
 		// If there are no dSYMs (the output is empty but has a zero exit 
 		// status), complete with no values. This can occur if this is a "fake"
